@@ -11,8 +11,7 @@ top_margin = 72
 
 
 class Ships:
-    head_ship_image = pygame.image.load(
-        "C:/Users/1290723/PycharmProjects/pythonProject/images/triangle.png")
+    head_ship_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'images\\triangle.png'))
     head_ship_image.set_colorkey(WHITE)
 
     @staticmethod
