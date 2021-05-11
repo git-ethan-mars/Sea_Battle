@@ -1,5 +1,4 @@
 import random
-import math
 
 block_size = 45
 left_margin = 90
