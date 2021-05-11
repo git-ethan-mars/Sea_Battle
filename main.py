@@ -56,11 +56,9 @@ class Game:
             if i < 10:
                 num_ver = font.render(str(i + 1), True, BLACK)
                 letters_hor = font.render(letters[i], True, BLACK)
-
                 num_ver_width = num_ver.get_width()
                 num_ver_height = num_ver.get_height()
                 letters_hor_width = letters_hor.get_width()
-
                 # Ver num grid1
                 screen.blit(num_ver, (
                     left_margin - (block_size // 2 + num_ver_width // 2),
@@ -87,7 +85,7 @@ class Game:
     def draw_player_ship(length):
         ship_coordinates = player.ships.create_ship(length)
         while not ship_coordinates:
-            ship_coordinates = computer.ships.create_ship(length)
+            ship_coordinates = player.ships.create_ship(length)
         for x, y in ship_coordinates:
             pygame.draw.rect(screen, BLUE,
                              pygame.Rect(
@@ -96,8 +94,8 @@ class Game:
                                  block_size, block_size))
 
     @staticmethod
-    def draw_hit(x, y, ships_set, enemy_left, enemy_top):
-        if (x, y) in [j for i in ships_set for j in i]:
+    def draw_hit(x, y, enemy_left, enemy_top, is_hurt):
+        if is_hurt:
             pygame.draw.line(screen, RED, (
                 enemy_left + x * block_size,
                 enemy_top + y * block_size), (
@@ -122,9 +120,13 @@ def main():
     screen.fill(WHITE)
     game.draw_grid()
     button = game.draw_quit_button()
+    amount_of_ships = 0
     for length in range(4, 0, -1):
         for _ in range(5 - length):
-            computer.ships.create_ship(length)
+            amount_of_ships += length
+            computer_ship_is_created = computer.ships.create_ship(length)
+            while not computer_ship_is_created:
+                computer_ship_is_created = computer.ships.create_ship(length)
             Game.draw_player_ship(length)
     while not game_over:
         for event in pygame.event.get():
@@ -134,11 +136,23 @@ def main():
                 if button.collidepoint(event.pos):
                     game_over = True
             if event.type == pygame.MOUSEBUTTONDOWN:
-                temp = player.shoot(event.pos)
-                if temp is not None:
-                    Game.draw_hit(*temp)
-                    Game.draw_hit(*computer.shoot())
+                player_shoot_status = player.shoot(event.pos)
+                if player_shoot_status is not None:
+                    Game.draw_hit(*player_shoot_status)
+                    if not player_shoot_status[-1]:
+                        computer_shoot_status = computer.shoot()
+                        Game.draw_hit(*computer_shoot_status)
+                        while computer_shoot_status[-1]:
+                            computer_shoot_status = computer.shoot()
+                            Game.draw_hit(*computer_shoot_status)
+
         pygame.display.update()
+        if Player.dead_ships == amount_of_ships:
+            print("Компьютер победил")
+            game_over = True
+        if Computer.dead_ships == amount_of_ships:
+            print("Игрок победил")
+            game_over = True
 
 
 main()
