@@ -87,7 +87,7 @@ class Game:
     def draw_player_ship(length):
         ship_coordinates = player.ships.create_ship(length)
         while not ship_coordinates:
-            ship_coordinates = computer.ships.create_ship(length)
+            ship_coordinates = player.ships.create_ship(length)
         for x, y in ship_coordinates:
             pygame.draw.rect(screen, BLUE,
                              pygame.Rect(
