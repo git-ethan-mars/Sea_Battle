@@ -8,7 +8,7 @@ BLUE = (0, 0, 255)
 block_size = 45
 left_margin = 90
 top_margin = 72
-screen = pygame.display.set_mode((1280, 720))
+screen = pygame.display.set_mode((1280, 720), pygame.FULLSCREEN)
 player = Player()
 computer = Computer()
 
@@ -24,6 +24,13 @@ class Game:
         quit_text = font.render("Выход", True, BLACK)
         screen.blit(quit_text, (1280 - int(block_size * 1.3), block_size // 3))
         return button
+
+    @staticmethod
+    def draw_winner(winner):
+        font_size = block_size * 4
+        font = pygame.font.SysFont('notosans', font_size)
+        text = font.render(f"Победил {winner}!", True, RED)
+        screen.blit(text, (0, block_size * 13))
 
     @staticmethod
     def draw_grid():
@@ -82,7 +89,7 @@ class Game:
                              top_margin - block_size // 2))
 
     @staticmethod
-    def draw_player_ship(length):
+    def draw_player_ship(length: int) -> None:
         ship_coordinates = player.ships.create_ship(length)
         while not ship_coordinates:
             ship_coordinates = player.ships.create_ship(length)
@@ -94,7 +101,9 @@ class Game:
                                  block_size, block_size))
 
     @staticmethod
-    def draw_hit(x, y, enemy_left, enemy_top, is_hurt):
+    def draw_hit(x: float, y: float, enemy_left: int, enemy_top: int,
+                 is_hurt: bool, first_ship: tuple or None,
+                 last_ship: tuple or None) -> None:
         if is_hurt:
             pygame.draw.line(screen, RED, (
                 enemy_left + x * block_size,
@@ -106,6 +115,32 @@ class Game:
                 enemy_top + y * block_size), (
                                  enemy_left + x * block_size,
                                  enemy_top + (y - 1) * block_size), 3)
+            if first_ship is not None:
+                if first_ship[1] == last_ship[1]:
+                    pygame.draw.line(screen, BLACK, (
+                        enemy_left + block_size * (
+                                min(first_ship[0], last_ship[0]) - 1),
+                        enemy_top + block_size * (
+                                first_ship[1] - 1) + block_size // 2),
+                                     (
+                                         enemy_left + block_size *
+                                         max(first_ship[0], last_ship[0]),
+                                         enemy_top + block_size * (
+                                                 last_ship[
+                                                     1] - 1) + block_size // 2),
+                                     5)
+                else:
+                    pygame.draw.line(screen, BLACK,
+                                     (enemy_left + block_size * (first_ship[
+                                                                     0] - 1) + block_size // 2,
+                                      enemy_top + block_size * (
+                                              min(first_ship[1],
+                                                  last_ship[1]) - 1)),
+                                     (enemy_left + block_size * (last_ship[
+                                                                     0] - 1) + block_size // 2,
+                                      enemy_top + block_size * max(first_ship[1],
+                                                                   last_ship[
+                                                                       1])), 5)
         else:
             pygame.draw.circle(screen, BLACK, (
                 enemy_left + x * block_size - block_size // 2,
@@ -117,6 +152,7 @@ def main():
     pygame.init()
     pygame.display.set_caption("Морской бой")
     game_over = False
+    finished = False
     screen.fill(WHITE)
     game.draw_grid()
     button = game.draw_quit_button()
@@ -135,25 +171,26 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if button.collidepoint(event.pos):
                     game_over = True
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN and not finished:
                 player_shoot_status = player.shoot(event.pos)
                 if player_shoot_status is not None:
                     Game.draw_hit(*player_shoot_status)
-                    if not player_shoot_status[-1]:
+                    if not player_shoot_status[4]:
                         computer_shoot_status = computer.shoot()
                         Game.draw_hit(*computer_shoot_status)
-                        while computer_shoot_status[-1]:
+                        while computer_shoot_status[4]:
                             computer_shoot_status = computer.shoot()
                             Game.draw_hit(*computer_shoot_status)
 
         pygame.display.update()
-        if Player.dead_ships == amount_of_ships:
-            print("Компьютер победил")
-            game_over = True
-        if Computer.dead_ships == amount_of_ships:
-            print("Игрок победил")
-            game_over = True
+        if player.dead_ships == amount_of_ships:
+            Game.draw_winner("Копьютер")
+            finished = True
+        elif computer.dead_ships == amount_of_ships:
+            Game.draw_winner("Игрок")
+            finished = True
 
 
-main()
-pygame.quit()
+if __name__ == '__main__':
+    main()
+    pygame.quit()
