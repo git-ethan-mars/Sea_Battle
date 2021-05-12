@@ -8,7 +8,7 @@ top_margin = 72
 class Ships:
 
     @staticmethod
-    def is_on_field(cell):
+    def is_on_field(cell: tuple) -> bool:
         return 1 <= cell[0] <= 10 and 1 <= cell[1] <= 10
 
     def __init__(self):
@@ -43,7 +43,7 @@ class Ships:
         self.refresh_available_cells(ship_coordinates)
         return ship_coordinates
 
-    def refresh_available_cells(self, ship_coordinates):
+    def refresh_available_cells(self, ship_coordinates: (int, int)) -> None:
         for x, y in ship_coordinates:
             for i in range(-1, 2):
                 for j in range(-1, 2):
