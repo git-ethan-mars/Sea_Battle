@@ -8,9 +8,9 @@ BLUE = (0, 0, 255)
 block_size = 45
 left_margin = 90
 top_margin = 72
-screen = pygame.display.set_mode((1280, 720))
 player = Player()
 computer = Computer()
+screen = pygame.display.set_mode((1280, 720), pygame.FULLSCREEN)
 
 
 class Game:
@@ -23,6 +23,17 @@ class Game:
         pygame.draw.rect(screen, (255, 0, 0), button)
         quit_text = font.render("Выход", True, BLACK)
         screen.blit(quit_text, (1280 - int(block_size * 1.3), block_size // 3))
+        return button
+
+    @staticmethod
+    def draw_restart_button():
+        font_size = block_size // 2
+        font = pygame.font.SysFont('notosans', font_size)
+        button = pygame.Rect(1280 - int(block_size * 5), 0,
+                             int(block_size * 2), block_size)
+        pygame.draw.rect(screen, (255, 0, 0), button)
+        quit_text = font.render("Перезапуск", True, BLACK)
+        screen.blit(quit_text, (1280 - int(block_size * 4.95), block_size // 3))
         return button
 
     @staticmethod
@@ -149,13 +160,18 @@ class Game:
 
 def main():
     game = Game()
+    game_finished = False
+    global screen, player, computer
+    screen = pygame.display.set_mode((1280, 720), pygame.FULLSCREEN)
+    player = Player()
+    computer = Computer()
+    restart = False
     pygame.init()
     pygame.display.set_caption("Морской бой")
-    game_over = False
-    finished = False
     screen.fill(WHITE)
     game.draw_grid()
-    button = game.draw_quit_button()
+    quit_button = game.draw_quit_button()
+    restart_button = game.draw_restart_button()
     amount_of_ships = 0
     for length in range(4, 0, -1):
         for _ in range(5 - length):
@@ -164,35 +180,49 @@ def main():
             while not computer_ship_is_created:
                 computer_ship_is_created = computer.ships.create_ship(length)
             Game.draw_player_ship(length)
-    print(Computer.ships.ships_set)
-
-    while not game_over:
+    while True:
+        flag = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                game_over = True
+                flag = True
+                pygame.quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if button.collidepoint(event.pos):
-                    game_over = True
-            if event.type == pygame.MOUSEBUTTONDOWN and not finished:
-                player_shoot_status = player.shoot(event.pos)
+                if quit_button.collidepoint(event.pos):
+                    pygame.quit()
+                    flag = True
+                    break
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if restart_button.collidepoint(event.pos):
+                    pygame.quit()
+                    flag = True
+                    restart = True
+                    break
+            if event.type == pygame.MOUSEBUTTONDOWN and not game_finished:
+                player_shoot_status = player.shoot(computer, event.pos)
                 if player_shoot_status is not None:
                     Game.draw_hit(*player_shoot_status)
                     if not player_shoot_status[4]:
-                        computer_shoot_status = computer.shoot()
+                        computer_shoot_status = computer.shoot(player)
                         Game.draw_hit(*computer_shoot_status)
                         while computer_shoot_status[4]:
-                            computer_shoot_status = computer.shoot()
+                            player.dead_ships += 1
+                            computer_shoot_status = computer.shoot(player)
                             Game.draw_hit(*computer_shoot_status)
-
+                    else:
+                        computer.dead_ships += 1
+        if flag:
+            break
         pygame.display.update()
         if player.dead_ships == amount_of_ships:
             Game.draw_winner("Копьютер")
-            finished = True
+            game_finished = True
         elif computer.dead_ships == amount_of_ships:
             Game.draw_winner("Игрок")
-            finished = True
+            game_finished = True
+
+    if restart:
+        main()
 
 
 if __name__ == '__main__':
     main()
-    pygame.quit()
