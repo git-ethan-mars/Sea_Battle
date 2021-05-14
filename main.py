@@ -8,7 +8,7 @@ BLUE = (0, 0, 255)
 block_size = 45
 left_margin = 90
 top_margin = 72
-screen = pygame.display.set_mode((1280, 720), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((1280, 720))
 player = Player()
 computer = Computer()
 
@@ -164,6 +164,8 @@ def main():
             while not computer_ship_is_created:
                 computer_ship_is_created = computer.ships.create_ship(length)
             Game.draw_player_ship(length)
+    print(Computer.ships.ships_set)
+
     while not game_over:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

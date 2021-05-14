@@ -18,7 +18,7 @@ class Player:
 
     def is_destroyed(self) -> bool:
         for ship in Computer.ships.ships_set:
-            if set(ship) == set(self.last_hurt_ship):
+            if set(ship) <= set(self.last_hurt_ship):
                 return True
         return False
 
@@ -33,10 +33,19 @@ class Player:
             if (x, y) in [j for i in Computer.ships.ships_set for j in i]:
                 self.last_hurt_ship.append((x, y))
             if self.is_destroyed():
-                self.last_hurt_ship.sort()
-                first_ship = self.last_hurt_ship[0]
-                last_ship = self.last_hurt_ship[-1]
-                self.last_hurt_ship = []
+                ship_candidate = []
+                for ship in Computer.ships.ships_set:
+                    if set(ship) <= set(self.last_hurt_ship):
+                        ship_candidate = ship
+                        break
+                temp = []
+                for cell in ship_candidate:
+                    if cell in self.last_hurt_ship:
+                        temp.append(cell)
+                        self.last_hurt_ship.remove(cell)
+                temp.sort()
+                first_ship = temp[0]
+                last_ship = temp[-1]
             if (x, y) in [j for i in Computer.ships.ships_set for j in i]:
                 Computer.dead_ships += 1
                 return x, y, self.enemy_left, self.enemy_top, True, first_ship, last_ship
