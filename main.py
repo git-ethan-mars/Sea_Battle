@@ -4,41 +4,90 @@ from players import Player, Computer
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
+GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, is_smart=True):
+        self.is_fast = False
+        self.is_smart = is_smart
         self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         self.block_size = 70
         self.left_margin = 90
         self.top_margin = 130
+        self.is_menu = True
+        self.is_options = False
+        self.is_finished = False
         self.player = Player(self)
         self.computer = Computer(self)
+        self.ships_amount = 0
+
+    def draw_new_game(self):
+        self.screen.fill(WHITE)
+        self.draw_grid()
+        for length in range(4, 0, -1):
+            for _ in range(5 - length):
+                self.ships_amount += length
+                computer_ship_is_created = self.computer.ships.create_ship(length)
+                while not computer_ship_is_created:
+                    computer_ship_is_created = self.computer.ships.create_ship(
+                        length)
+                self.draw_player_ship(length)
+
+    def draw_centre_text(self, text, offset_x=0, offset_y=0):
+        font_size = self.block_size * 3
+        font = pygame.font.SysFont('notosans', font_size)
+        text = font.render(text, True, BLACK)
+        self.screen.blit(text, (
+            (self.screen.get_width() - text.get_width()) // 2 + offset_x,
+            (self.screen.get_height() - text.get_height()) // 2 + offset_y))
+
+    def draw_centre_button(self, text: str, color: tuple, offset_x: int = 0,
+                           offset_y: int = 0):
+        font_size = self.block_size * 3
+        font = pygame.font.SysFont('notosans', font_size)
+        button_text = font.render(text, True, BLACK)
+        button = pygame.Rect(
+            (self.screen.get_width() - button_text.get_width()) // 2 + offset_x,
+            (self.screen.get_height() - button_text.get_height()) // 2 + offset_y,
+            button_text.get_width(), button_text.get_height())
+        pygame.draw.rect(self.screen, color, button)
+        self.screen.blit(button_text, (
+            (self.screen.get_width() - button_text.get_width()) // 2 + offset_x,
+            (self.screen.get_height() - button_text.get_height()) // 2 + offset_y))
+        return button
 
     def draw_menu(self):
         self.screen.fill(WHITE)
+        new_game_button = self.draw_centre_button("Новая игра", BLUE,
+                                                  offset_y=-250)
+        fast_game_button = self.draw_centre_button("Быстрая игра", GREEN,
+                                                   offset_y=-80)
+        options_button = self.draw_centre_button("Опции", BLUE, offset_y=80)
+        exit_button = self.draw_centre_button("Выход из игры", RED, offset_y=250)
+        return new_game_button, fast_game_button, options_button, exit_button
 
-    def draw_quit_button(self):
+    def draw_options(self):
+        self.screen.fill(WHITE)
+        self.draw_centre_text("Опции", offset_y=-250)
+        if self.is_smart:
+            computer_mode_button = self.draw_centre_button("Умный противник", GREEN,offset_y=-75)
+        else:
+            computer_mode_button = self.draw_centre_button("Глупый противник", RED,
+                                                           offset_y=-75)
+        menu_button = self.draw_centre_button("Назад в меню", RED,offset_y=100)
+        return computer_mode_button, menu_button
+
+    def draw_back_to_menu_button(self):
         font_size = self.block_size // 2
         font = pygame.font.SysFont('notosans', font_size)
-        button = pygame.Rect(1920 - int(self.block_size * 1.5), 0,
-                             int(self.block_size * 1.5), self.block_size)
+        button = pygame.Rect(1920 - int(self.block_size * 2.8), 0,
+                             int(self.block_size * 2.8), self.block_size)
         pygame.draw.rect(self.screen, (255, 0, 0), button)
-        quit_text = font.render("Выход", True, BLACK)
-        self.screen.blit(quit_text,
-                         (1920 - int(self.block_size * 1.3), self.block_size // 3))
-        return button
-
-    def draw_restart_button(self):
-        font_size = self.block_size // 2
-        font = pygame.font.SysFont('notosans', font_size)
-        button = pygame.Rect(1920 - int(self.block_size * 5), 0,
-                             int(self.block_size * 2), self.block_size)
-        pygame.draw.rect(self.screen, (255, 0, 0), button)
-        quit_text = font.render("Перезапуск", True, BLACK)
-        self.screen.blit(quit_text,
-                         (1920 - int(self.block_size * 4.95), self.block_size // 3))
+        back_text = font.render("Назад в меню", True, BLACK)
+        self.screen.blit(back_text,
+                         (1920 - int(self.block_size * 2.6), self.block_size // 3))
         return button
 
     def draw_winner(self, winner):
@@ -161,66 +210,59 @@ class Game:
 
 
 def main():
-    game = Game()
-    game_finished = False
-    restart = False
     pygame.init()
     pygame.display.set_caption("Морской бой")
-    game.screen.fill(WHITE)
-    game.draw_grid()
-    quit_button = game.draw_quit_button()
-    restart_button = game.draw_restart_button()
-    amount_of_ships = 0
-    for length in range(4, 0, -1):
-        for _ in range(5 - length):
-            amount_of_ships += length
-            computer_ship_is_created = game.computer.ships.create_ship(length)
-            while not computer_ship_is_created:
-                computer_ship_is_created = game.computer.ships.create_ship(length)
-            game.draw_player_ship(length)
-    while True:
-        flag = False
+    game = Game()
+    new_game_button, fast_game_button, options_button, exit_button = game.draw_menu()
+    working = True
+    while working:
+        pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                flag = True
                 pygame.quit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if quit_button.collidepoint(event.pos):
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if (not game.is_menu or game.is_options) \
+                        and menu_button.collidepoint(event.pos):
+                    game.__init__(game.is_smart)
+                    new_game_button, fast_game_button, options_button, exit_button = game.draw_menu()
+                elif game.is_menu and not game.is_options and (
+                        new_game_button.collidepoint(
+                            event.pos) or fast_game_button.collidepoint(event.pos)):
+                    game.draw_new_game()
+                    menu_button = game.draw_back_to_menu_button()
+                    game.is_menu = False
+                elif game.is_menu and not game.is_options and exit_button.collidepoint(
+                        event.pos):
                     pygame.quit()
-                    flag = True
+                    working = False
                     break
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if restart_button.collidepoint(event.pos):
-                    pygame.quit()
-                    flag = True
-                    restart = True
-                    break
-            if event.type == pygame.MOUSEBUTTONDOWN and not game_finished:
-                player_shoot_status = game.player.shoot(game,
-                                                        event.pos)
-                if player_shoot_status is not None:
-                    game.draw_hit(*player_shoot_status)
-                    if not player_shoot_status[4]:
-                        computer_shoot_status = game.computer.shoot(game.player)
-                        game.draw_hit(*computer_shoot_status)
-                        while computer_shoot_status[4]:
-                            game.player.dead_ships += 1
-                            computer_shoot_status = game.computer.shoot(game.player)
+                elif game.is_menu and options_button.collidepoint(event.pos):
+                    game.is_options = True
+                    computer_mode_button, menu_button = game.draw_options()
+                elif game.is_options and computer_mode_button.collidepoint(
+                        event.pos):
+                    game.is_smart = not game.is_smart
+                    computer_mode_button, menu_button = game.draw_options()
+                elif not (game.is_finished or game.is_menu):
+                    player_shoot_status = game.player.shoot(game,
+                                                            event.pos)
+                    if player_shoot_status is not None:
+                        game.draw_hit(*player_shoot_status)
+                        if not player_shoot_status[4]:
+                            computer_shoot_status = game.computer.shoot(game)
                             game.draw_hit(*computer_shoot_status)
-                    else:
-                        game.computer.dead_ships += 1
-        if flag:
-            break
-        pygame.display.update()
-        if game.player.dead_ships == amount_of_ships:
+                            while computer_shoot_status[4]:
+                                game.player.dead_ships += 1
+                                computer_shoot_status = game.computer.shoot(game)
+                                game.draw_hit(*computer_shoot_status)
+                        else:
+                            game.computer.dead_ships += 1
+        if not game.is_menu and game.player.dead_ships == game.ships_amount:
             game.draw_winner("Копьютер")
-            game_finished = True
-        elif game.computer.dead_ships == amount_of_ships:
+            game.is_finished = True
+        elif not game.is_menu and game.computer.dead_ships == game.ships_amount:
             game.draw_winner("Игрок")
-            game_finished = True
-
-    if restart:
-        main()
+            game.is_finished = True
 
 
 if __name__ == '__main__':
