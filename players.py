@@ -1,19 +1,15 @@
 import random
 import ships
 
-block_size = 45
-left_margin = 90
-top_margin = 72
-
 
 class Player:
 
-    def __init__(self):
+    def __init__(self, game):
         self.ships = ships.Ships()
         self.dead_ships = 0
         self.free_cells = [(x, y) for x in range(1, 11) for y in range(1, 11)]
-        self.enemy_left = left_margin + block_size * 15
-        self.enemy_top = top_margin
+        self.enemy_left = game.left_margin + game.block_size * 15
+        self.enemy_top = game.top_margin
         self.last_hurt_ship = []
 
     def is_destroyed(self, computer) -> bool:
@@ -22,19 +18,19 @@ class Player:
                 return True
         return False
 
-    def shoot(self, computer, position) -> (
+    def shoot(self, game, position) -> (
             int, int, int, int, bool, tuple or None, tuple or None):
         first_ship = None
         last_ship = None
-        x, y = ((position[0] - self.enemy_left) // block_size + 1,
-                (position[1] - self.enemy_top) // block_size + 1)
+        x, y = ((position[0] - self.enemy_left) // game.block_size + 1,
+                (position[1] - self.enemy_top) // game.block_size + 1)
         if ships.Ships.is_on_field((x, y)) and (x, y) in self.free_cells:
             self.free_cells.remove((x, y))
-            if (x, y) in [j for i in computer.ships.ships_set for j in i]:
+            if (x, y) in [j for i in game.computer.ships.ships_set for j in i]:
                 self.last_hurt_ship.append((x, y))
-            if self.is_destroyed(computer):
+            if self.is_destroyed(game.computer):
                 ship_candidate = []
-                for ship in computer.ships.ships_set:
+                for ship in game.computer.ships.ships_set:
                     if set(ship) <= set(self.last_hurt_ship):
                         ship_candidate = ship
                         break
@@ -46,7 +42,7 @@ class Player:
                 temp.sort()
                 first_ship = temp[0]
                 last_ship = temp[-1]
-            if (x, y) in [j for i in computer.ships.ships_set for j in i]:
+            if (x, y) in [j for i in game.computer.ships.ships_set for j in i]:
                 return x, y, self.enemy_left, self.enemy_top, True, first_ship, last_ship
             else:
                 return x, y, self.enemy_left, self.enemy_top, False, first_ship, last_ship
@@ -54,12 +50,12 @@ class Player:
 
 class Computer:
 
-    def __init__(self):
+    def __init__(self, game):
         self.ships = ships.Ships()
         self.dead_ships = 0
         self.free_cells = [(x, y) for x in range(1, 11) for y in range(1, 11)]
-        self.enemy_left = left_margin
-        self.enemy_top = top_margin
+        self.enemy_left = game.left_margin
+        self.enemy_top = game.top_margin
         self.possible_targets = []
         self.last_hurt_ship = []
 
