@@ -1,9 +1,5 @@
 import random
 
-block_size = 45
-left_margin = 90
-top_margin = 72
-
 
 class Ships:
 
