@@ -1,7 +1,7 @@
 import random
 
 
-class Ships:
+class ShipsSet:
 
     @staticmethod
     def is_on_field(cell: tuple) -> bool:
@@ -10,9 +10,9 @@ class Ships:
     def __init__(self):
         self.available_cells = [(x, y) for x in range(1, 11) for y in
                                 range(1, 11)]
-        self.ships_set = []
+        self.ships = []
 
-    def choose_started_cell(self):
+    def choose_started_cell(self) -> ([int, int], bool, int):
         started_cell = random.choice(self.available_cells)
         is_vertical = bool(random.getrandbits(1))
         direction = random.choice([-1, 1])
@@ -24,18 +24,18 @@ class Ships:
         x, y = started_cell
         for i in range(length):
             if not is_vertical:
-                if Ships.is_on_field((x + i * direction, y)) and (
+                if ShipsSet.is_on_field((x + i * direction, y)) and (
                         x + i * direction, y) in self.available_cells:
                     ship_coordinates.append((x + i * direction, y))
                 else:
                     return False
             else:
-                if Ships.is_on_field((x, y + i * direction)) and (
+                if ShipsSet.is_on_field((x, y + i * direction)) and (
                         x, y + i * direction) in self.available_cells:
                     ship_coordinates.append((x, y + i * direction))
                 else:
                     return False
-        self.ships_set.append(ship_coordinates)
+        self.ships.append(ship_coordinates)
         self.refresh_available_cells(ship_coordinates)
         return ship_coordinates
 
@@ -43,6 +43,6 @@ class Ships:
         for x, y in ship_coordinates:
             for i in range(-1, 2):
                 for j in range(-1, 2):
-                    if Ships.is_on_field((x + i, y + j)) and (
+                    if ShipsSet.is_on_field((x + i, y + j)) and (
                             x + i, y + j) in self.available_cells:
                         self.available_cells.remove((x + i, y + j))
