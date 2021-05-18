@@ -18,9 +18,12 @@ class ShipsSet:
         direction = random.choice([-1, 1])
         return started_cell, is_vertical, direction
 
-    def create_ship(self, length):
+    def create_ship(self, length, manually = False, started_cell=None,is_vertical=None):
         ship_coordinates = []
-        started_cell, is_vertical, direction = self.choose_started_cell()
+        if manually:
+            direction = 1
+        else:
+            started_cell, is_vertical, direction = self.choose_started_cell()
         x, y = started_cell
         for i in range(length):
             if not is_vertical:
