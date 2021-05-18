@@ -54,6 +54,12 @@ class Player:
                 return x, y, self.enemy_left, \
                        self.enemy_top, False, first_ship, last_ship
 
+    @staticmethod
+    def get_cell(game, position):
+        return (position[0] - game.left_margin) // game.block_size + 1, (
+                    position[1]
+                    - game.top_margin) // game.block_size + 1
+
 
 class Computer:
 
