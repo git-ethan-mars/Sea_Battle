@@ -11,6 +11,11 @@ class ShipsSet:
         self.available_cells = [(x, y) for x in range(1, 11) for y in
                                 range(1, 11)]
         self.ships = []
+        self.ships_placed = {}
+        self.ships_copy = None
+
+    def is_ships_placed(self, game):
+        return game.load_file() == self.ships_placed
 
     def choose_started_cell(self) -> ([int, int], bool, int):
         started_cell = random.choice(self.available_cells)
@@ -18,7 +23,8 @@ class ShipsSet:
         direction = random.choice([-1, 1])
         return started_cell, is_vertical, direction
 
-    def create_ship(self, length, manually = False, started_cell=None,is_vertical=None):
+    def create_ship(self, length, manually=False, started_cell=None,
+                    is_vertical=None):
         ship_coordinates = []
         if manually:
             direction = 1
@@ -40,6 +46,10 @@ class ShipsSet:
                     return False
         self.ships.append(ship_coordinates)
         self.refresh_available_cells(ship_coordinates)
+        if len(ship_coordinates) in self.ships_placed:
+            self.ships_placed[len(ship_coordinates)] += 1
+        else:
+            self.ships_placed[len(ship_coordinates)] = 1
         return ship_coordinates
 
     def refresh_available_cells(self, ship_coordinates: (int, int)) -> None:
