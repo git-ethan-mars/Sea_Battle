@@ -24,6 +24,7 @@ class Player:
             int, int, int, int, bool, tuple or None, tuple or None):
         first_ship = None
         last_ship = None
+        ship = None
         x, y = ((position[0] - self.enemy_left) // game.block_size + 1,
                 (position[1] - self.enemy_top) // game.block_size + 1)
         is_hurt = (x, y) in [j for i in game.computer.data_ships.ships for j in
@@ -57,8 +58,8 @@ class Player:
     @staticmethod
     def get_cell(game, position):
         return (position[0] - game.left_margin) // game.block_size + 1, (
-                    position[1]
-                    - game.top_margin) // game.block_size + 1
+                position[1]
+                - game.top_margin) // game.block_size + 1
 
 
 class Computer:
@@ -85,6 +86,7 @@ class Computer:
         is_vertical = True
         first_ship = None
         last_ship = None
+        ship = None
         if not game.is_smart:
             x, y = random.choice(self.free_cells)
             self.free_cells.remove((x, y))
@@ -92,7 +94,7 @@ class Computer:
                 self.last_hurt_ship.append((x, y))
             if self.is_destroyed(game.computer):
                 ship_candidate = []
-                for ship in game.computer.data_ships.ships:
+                for ship in game.player.data_ships.ships:
                     if set(ship) <= set(self.last_hurt_ship):
                         ship_candidate = ship
                         break
@@ -148,6 +150,7 @@ class Computer:
                 self.last_hurt_ship.sort()
                 first_ship = self.last_hurt_ship[0]
                 last_ship = self.last_hurt_ship[-1]
+                game.player.dead_ships_length[len(self.last_hurt_ship)] += 1
                 for ship in self.possible_targets:
                     self.free_cells.remove(ship)
                 self.last_hurt_ship = []

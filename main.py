@@ -1,5 +1,5 @@
 import pygame
-from game import Game, RED, Player, Computer
+from game import Game, RED, GREEN, Player, Computer
 
 
 def main():
@@ -9,12 +9,30 @@ def main():
     new_game_button, fast_game_button, \
     options_button, exit_button = game.draw_menu()
     working = True
+    menu_button = None
+    computer_mode_button = None
+    start_game_button = None
     while working:
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-            if event.type == pygame.MOUSEBUTTONDOWN and (event.button == 1 or event.button == 3):
+            elif game.is_place and game.player.data_ships.is_ships_placed(
+                    game):
+                start_game_button = game.draw_centre_button("Начать игру",
+                                                            GREEN,
+                                                            offset_y=450)
+            if event.type == pygame.MOUSEBUTTONDOWN and (
+                    event.button == 1 or event.button == 3):
+                if start_game_button is not None and start_game_button.collidepoint(
+                        event.pos):
+                    print("KEK")
+                    game.player.data_ships.ships_copy = game.player.data_ships.ships[:]
+                    start_game_button = None
+                    game.is_place = False
+                    game.draw_fast_game()
+                    menu_button = game.draw_back_to_menu_button()
+                    game.is_menu = False
                 if (not game.is_menu or game.is_options) \
                         and menu_button.collidepoint(event.pos):
                     game = Game(game.is_smart)
@@ -24,21 +42,25 @@ def main():
                         event.pos):
                     game.is_place = True
                     game.draw_new_game()
-                    game.draw_fleet_statistic()
+                    game.draw_player_statistic(game.font)
                     menu_button = game.draw_back_to_menu_button()
                     game.is_menu = False
-                elif any([rect.collidepoint(event.pos) for rect in
-                          game.rect_to_place]):
+                elif game.is_place and start_game_button is None and any(
+                        [rect.collidepoint(event.pos) for rect in
+                         game.rect_to_place]):
                     for rect in game.rect_to_place:
                         if rect.collidepoint(event.pos):
                             game.rect_taken = rect
-                elif game.rect_taken is not None:
+                elif game.is_place and start_game_button is None and game.rect_taken is not None:
                     cell = Player.get_cell(game, event.pos)
                     if game.player.data_ships.is_on_field(cell):
-                        game.draw_ship_manually(cell, game.rect_taken,event.button == 1)
+                        game.place_ship_manually(cell, game.rect_taken,
+                                                 event.button == 1)
 
                 elif game.is_menu and not game.is_options and \
-                        fast_game_button.collidepoint(event.pos):
+                        (fast_game_button.collidepoint(
+                            event.pos) or new_game_button.collidepoint(
+                            event.pos)):
                     try:
                         game.draw_fast_game()
                         menu_button = game.draw_back_to_menu_button()
