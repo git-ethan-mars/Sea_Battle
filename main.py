@@ -26,7 +26,6 @@ def main():
                     event.button == 1 or event.button == 3):
                 if start_game_button is not None and start_game_button.collidepoint(
                         event.pos):
-                    print("KEK")
                     game.player.data_ships.ships_copy = game.player.data_ships.ships[:]
                     start_game_button = None
                     game.is_place = False
