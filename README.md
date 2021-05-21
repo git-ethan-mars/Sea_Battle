@@ -14,4 +14,4 @@
 ## Структура
 * `sea_battle.py` - отвечает за обработку событий
 * `game.py`, `players.py`, `shipsSet.py` - модули
-* `test.py` - тесты
+* `tests.py` - тесты
