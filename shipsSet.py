@@ -3,19 +3,12 @@ import random
 
 class ShipsSet:
 
-    @staticmethod
-    def is_on_field(cell: tuple) -> bool:
-        return 1 <= cell[0] <= 10 and 1 <= cell[1] <= 10
-
     def __init__(self):
         self.available_cells = [(x, y) for x in range(1, 11) for y in
                                 range(1, 11)]
         self.ships = []
         self.ships_placed = {}
         self.ships_copy = None
-
-    def is_ships_placed(self, game):
-        return game.load_file() == self.ships_placed
 
     def choose_started_cell(self) -> ([int, int], bool, int):
         started_cell = random.choice(self.available_cells)
@@ -33,13 +26,13 @@ class ShipsSet:
         x, y = started_cell
         for i in range(length):
             if not is_vertical:
-                if ShipsSet.is_on_field((x + i * direction, y)) and (
+                if is_on_field((x + i * direction, y)) and (
                         x + i * direction, y) in self.available_cells:
                     ship_coordinates.append((x + i * direction, y))
                 else:
                     return False
             else:
-                if ShipsSet.is_on_field((x, y + i * direction)) and (
+                if is_on_field((x, y + i * direction)) and (
                         x, y + i * direction) in self.available_cells:
                     ship_coordinates.append((x, y + i * direction))
                 else:
@@ -56,6 +49,10 @@ class ShipsSet:
         for x, y in ship_coordinates:
             for i in range(-1, 2):
                 for j in range(-1, 2):
-                    if ShipsSet.is_on_field((x + i, y + j)) and (
+                    if is_on_field((x + i, y + j)) and (
                             x + i, y + j) in self.available_cells:
                         self.available_cells.remove((x + i, y + j))
+
+
+def is_on_field(cell: tuple) -> bool:
+    return 1 <= cell[0] <= 10 and 1 <= cell[1] <= 10
