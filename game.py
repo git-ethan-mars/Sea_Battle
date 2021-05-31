@@ -439,7 +439,7 @@ class Game:
             self.last_message = "Больше нет таких кораблей"
             self.draw_centre_text(
                 self.last_message,
-                round(block_size * 1.5), WHITE,
+                round(block_size * 1.5), RED,
                 offset_y=400, offset_x=200)
             self.wrong_ship_placed = True
 
@@ -448,7 +448,7 @@ class Game:
             self.last_message,
             block_size * 2, RED,
             offset_y=400, offset_x=200)
-        self.screen.fill(GREEN, pygame.Rect(*text_data))
+        self.screen.fill(WHITE, pygame.Rect(*text_data))
         self.wrong_ship_placed = False
 
 
