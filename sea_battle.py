@@ -31,22 +31,17 @@ def main():
                     game.player.data_ships.ships_copy = game.player.data_ships.ships[
                                                         :]
                     start_game_button = None
-                    game.is_place = False
                     game.draw_fast_game()
                     menu_button = game.draw_back_to_menu_button()
-                    game.is_menu = False
                 if (not game.is_menu or game.is_options) \
                         and menu_button.collidepoint(event.pos):
                     game = Game(game.is_smart)
+                    start_game_button = None
                     new_game_button, fast_game_button, \
                     options_button, exit_button = game.draw_menu()
                 elif game.is_menu and not game.is_options and new_game_button.collidepoint(
                         event.pos):
-                    game.is_place = True
-                    game.draw_new_game()
-                    game.draw_player_statistic(game.font)
-                    menu_button = game.draw_back_to_menu_button()
-                    game.is_menu = False
+                    menu_button = game.draw_new_game()
                 elif game.is_place and start_game_button is None and any(
                         [rect.collidepoint(event.pos) for rect in
                          game.rect_to_place]):
@@ -63,32 +58,7 @@ def main():
                         (fast_game_button.collidepoint(
                             event.pos) or new_game_button.collidepoint(
                             event.pos)):
-                    try:
-                        game.draw_fast_game()
-                        menu_button = game.draw_back_to_menu_button()
-                        game.is_menu = False
-                    except ValueError:
-                        game.draw_menu()
-                        game.draw_centre_text(
-                            "В файле ships.txt введены некоректные данные!",
-                            40,
-                            RED, offset_y=470)
-                        game.draw_centre_text(
-                            "Измените и сохраните его",
-                            40,
-                            RED, offset_y=500)
-                    except IndexError:
-                        game.draw_menu()
-                        game.draw_centre_text(
-                            "Уменьшите количество кораблей",
-                            40,
-                            RED, offset_y=470)
-                        game.draw_centre_text(
-                            "Невозможна генерация поля",
-                            40,
-                            RED, offset_y=500)
-                        game.player = Player()
-                        game.computer = Computer()
+                    menu_button = game.draw_fast_game()
                 elif game.is_menu and not game.is_options and \
                         exit_button.collidepoint(event.pos):
                     pygame.quit()
