@@ -509,8 +509,6 @@ class Game:
                         max(rect_width, rect_height) // (block_size // 2),
                         True, self.ship_to_replace[0], not is_horizontal,replace)
                     self.color_ship(self.ship_to_replace, BLUE)
-                    print(self.player.data_ships.ships)
-                    print(self.player.data_ships.ships_placed)
         else:
             self.last_message = "Больше нет таких кораблей"
             self.draw_centre_text(
