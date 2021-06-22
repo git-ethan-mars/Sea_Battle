@@ -26,6 +26,18 @@ def main():
                                                             offset_y=450)
             if event.type == pygame.MOUSEBUTTONDOWN and (
                     event.button == 1 or event.button == 3):
+                if game.ship_to_replace is not None and game.is_place:
+                    game.change_ship_position(Player.get_cell(event.pos),
+                                              len(game.ship_to_replace),
+                                              event.button == 1)
+                    game.ship_to_replace = None
+                    continue
+                for ship in game.player.data_ships.ships:
+                    for cell in ship:
+                        if Player.get_cell(event.pos) == cell:
+                            game.ship_to_replace = ship
+                            game.color_ship(ship, GREEN)
+                            break
                 if start_game_button is not None and start_game_button.collidepoint(
                         event.pos):
                     game.player.data_ships.ships_copy = game.player.data_ships.ships[
@@ -47,13 +59,14 @@ def main():
                          game.rect_to_place]):
                     for rect in game.rect_to_place:
                         if rect.collidepoint(event.pos):
+                            game.mark_current_ship(rect)
                             game.rect_taken = rect
-                elif game.is_place and start_game_button is None and game.rect_taken is not None:
+                elif game.is_place and start_game_button is None and game.rect_taken is not None and game.ship_to_replace is None:
                     cell = Player.get_cell(event.pos)
                     if is_on_field(cell):
-                        game.place_ship_manually(cell, game.rect_taken,
+                        game.place_ship_manually(cell, game.rect_taken.w,
+                                                 game.rect_taken.h,
                                                  event.button == 1)
-
                 elif game.is_menu and not game.is_options and \
                         (fast_game_button.collidepoint(
                             event.pos) or new_game_button.collidepoint(

@@ -1,6 +1,7 @@
 import pygame
 from players import Player, Computer
 from settings import *
+from shipsSet import is_on_field
 
 
 def load_file():
@@ -43,6 +44,7 @@ class Game:
         self.font = pygame.font.Font(self.file_font,
                                      int(block_size // 3))
         self.message_rect = None
+        self.ship_to_replace = None
 
     def draw_new_game(self):
         try:
@@ -348,6 +350,8 @@ class Game:
                     ships_data[len(ship)] += 1
                 else:
                     ships_data[len(ship)] = 1
+        ships_data = dict(
+            sorted(ships_data.items(), key=lambda x: x[0], reverse=True))
         for key in ships_data:
             ships_data[key] -= self.player.dead_ships_length[key]
         i = 0
@@ -449,7 +453,8 @@ class Game:
                 i = 0
                 j += 1
 
-    def place_ship_manually(self, cell, rect, is_horizontal):
+    def place_ship_manually(self, cell, rect_width, rect_height,
+                            is_horizontal, replace=False):
         if self.wrong_ship_placed:
             self.delete_message()
         ships_data = load_file()
@@ -457,30 +462,16 @@ class Game:
             for ship in ships_data:
                 self.player.data_ships.ships_placed[ship] = 0
         if self.player.data_ships.ships_placed[
-            rect.w // (block_size // 2)] < ships_data[
-            rect.w // (block_size // 2)]:
+            rect_width // (block_size // 2)] < ships_data[
+            rect_width // (block_size // 2)] or replace:
             result = self.player.data_ships.create_ship(
-                rect.width // (block_size // 2),
-                True, cell, not is_horizontal)
+                max(rect_width, rect_height) // (block_size // 2),
+                True, cell, not is_horizontal, replace)
             if result:
-                if is_horizontal:
-                    pygame.draw.rect(self.screen, BLUE,
-                                     pygame.Rect(left_margin + (
-                                             cell[0] - 1) * block_size,
-                                                 top_margin + (
-                                                         cell[1] - 1)
-                                                 * block_size,
-                                                 rect.width * 2,
-                                                 rect.height * 2))
-                else:
-                    pygame.draw.rect(self.screen, BLUE,
-                                     pygame.Rect(left_margin + (
-                                             cell[0] - 1) * block_size,
-                                                 top_margin + (
-                                                         cell[1] - 1)
-                                                 * block_size,
-                                                 rect.height * 2,
-                                                 rect.width * 2))
+                if replace:
+                    self.color_ship(self.ship_to_replace, WHITE)
+                    self.refresh_cells(self.ship_to_replace)
+                self.color_ship(result, BLUE)
                 i = 0
                 j = 0
                 for length in ships_data:
@@ -505,6 +496,7 @@ class Game:
                     if i % 4 == 0:
                         i = 0
                         j += 1
+
             else:
                 self.last_message = "Невозможно установить корабль"
                 self.draw_centre_text(
@@ -512,7 +504,13 @@ class Game:
                     block_size, RED,
                     offset_y=400, offset_x=200)
                 self.wrong_ship_placed = True
-
+                if replace:
+                    self.player.data_ships.create_ship(
+                        max(rect_width, rect_height) // (block_size // 2),
+                        True, self.ship_to_replace[0], not is_horizontal,replace)
+                    self.color_ship(self.ship_to_replace, BLUE)
+                    print(self.player.data_ships.ships)
+                    print(self.player.data_ships.ships_placed)
         else:
             self.last_message = "Больше нет таких кораблей"
             self.draw_centre_text(
@@ -524,3 +522,69 @@ class Game:
     def delete_message(self):
         self.screen.fill(WHITE, self.message_rect)
         self.wrong_ship_placed = False
+
+    def mark_current_ship(self, current_rect):
+        if self.rect_taken is not None:
+            pygame.draw.circle(self.screen, WHITE, (
+                self.rect_taken.left - 15, self.rect_taken.centery), 5)
+        pygame.draw.circle(self.screen, RED, (
+            current_rect.left - 15, current_rect.centery), 5)
+
+    def change_ship_position(self, cell, length, is_horizontal):
+        if not is_on_field(cell):
+            self.color_ship(self.ship_to_replace, BLUE)
+        else:
+            temp = cell
+            self.player.data_ships.ships.remove(self.ship_to_replace)
+            for cell in self.ship_to_replace:
+                for i in range(-1, 2):
+                    for j in range(-1, 2):
+                        if is_on_field(
+                                (cell[0] + i, cell[1] + j)) and (
+                                cell[0] + i, cell[
+                                                 1] + j) not in self.player.data_ships.available_cells:
+                            self.player.data_ships.available_cells.append(
+                                (cell[0] + i, cell[1] + j))
+            cell = temp
+            if is_horizontal:
+                self.place_ship_manually(cell, length * (block_size // 2),
+                                         block_size // 2, is_horizontal, True)
+            else:
+                self.place_ship_manually(cell, block_size // 2,
+                                         length * (block_size // 2),
+                                         is_horizontal,
+                                         True)
+
+    def color_ship(self, ship, color):
+        for cell in ship:
+            pygame.draw.rect(self.screen, color,
+                             pygame.Rect(left_margin + (
+                                     cell[0] - 1) * block_size,
+                                         top_margin + (
+                                                 cell[1] - 1)
+                                         * block_size,
+                                         block_size,
+                                         block_size))
+
+    def refresh_cells(self, ship):
+        for cell in ship:
+            pygame.draw.line(self.screen, BLACK, (
+                left_margin + (cell[0] - 1) * block_size,
+                top_margin + (cell[1] - 1) * block_size), (
+                                 left_margin + (cell[0] - 1) * block_size,
+                                 top_margin + cell[1] * block_size))
+            pygame.draw.line(self.screen, BLACK, (
+                left_margin + (cell[0] - 1) * block_size,
+                top_margin + (cell[1] - 1) * block_size), (
+                                 left_margin + cell[0] * block_size,
+                                 top_margin + (cell[1] - 1) * block_size))
+            pygame.draw.line(self.screen, BLACK, (
+                left_margin + cell[0] * block_size,
+                top_margin + (cell[1] - 1) * block_size), (
+                                 left_margin + cell[0] * block_size,
+                                 top_margin + cell[1] * block_size))
+            pygame.draw.line(self.screen, BLACK, (
+                left_margin + (cell[0] - 1) * block_size,
+                top_margin + cell[1] * block_size), (
+                                 left_margin + cell[0] * block_size,
+                                 top_margin + cell[1] * block_size))

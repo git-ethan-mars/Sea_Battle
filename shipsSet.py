@@ -17,7 +17,7 @@ class ShipsSet:
         return started_cell, is_vertical, direction
 
     def create_ship(self, length, manually=False, started_cell=None,
-                    is_vertical=None):
+                    is_vertical=None, replace=False):
         ship_coordinates = []
         if manually:
             direction = 1
@@ -41,6 +41,8 @@ class ShipsSet:
         self.refresh_available_cells(ship_coordinates)
         if len(ship_coordinates) in self.ships_placed:
             self.ships_placed[len(ship_coordinates)] += 1
+            if replace:
+                self.ships_placed[len(ship_coordinates)] -= 1
         else:
             self.ships_placed[len(ship_coordinates)] = 1
         return ship_coordinates
