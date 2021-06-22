@@ -34,7 +34,7 @@ def main():
                     continue
                 for ship in game.player.data_ships.ships:
                     for cell in ship:
-                        if Player.get_cell(event.pos) == cell:
+                        if Player.get_cell(event.pos) == cell and game.is_place:
                             game.ship_to_replace = ship
                             game.color_ship(ship, GREEN)
                             break
@@ -103,7 +103,7 @@ def main():
                         else:
                             game.computer.dead_ships += 1
         if not game.is_menu and game.player.dead_ships == game.ships_amount != 0:
-            game.draw_centre_text("Победил компьютер!", block_size * 3.5,
+            game.draw_centre_text("Победил компьютер!", block_size * 2.5,
                                   RED)
             game.is_finished = True
         elif not game.is_menu and \

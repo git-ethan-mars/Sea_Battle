@@ -196,12 +196,6 @@ class Game:
                           block_size // 7))
         return button
 
-    def draw_winner(self, winner: str) -> None:
-        font_size = block_size * 4
-        font = pygame.font.Font(self.file_font, font_size)
-        text = font.render(f"Победил {winner}!", True, RED)
-        self.screen.blit(text, (0, block_size * 13))
-
     def draw_grid(self) -> None:
         letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'К']
         for i in range(11):
@@ -507,10 +501,11 @@ class Game:
                 if replace:
                     self.player.data_ships.create_ship(
                         max(rect_width, rect_height) // (block_size // 2),
-                        True, self.ship_to_replace[0], not is_horizontal,replace)
+                        True, self.ship_to_replace[0],
+                        self.ship_to_replace[0][0] == self.ship_to_replace[-1][
+                            0],
+                        replace)
                     self.color_ship(self.ship_to_replace, BLUE)
-                    print(self.player.data_ships.ships)
-                    print(self.player.data_ships.ships_placed)
         else:
             self.last_message = "Больше нет таких кораблей"
             self.draw_centre_text(
@@ -545,6 +540,8 @@ class Game:
                                                  1] + j) not in self.player.data_ships.available_cells:
                             self.player.data_ships.available_cells.append(
                                 (cell[0] + i, cell[1] + j))
+            for ship in self.player.data_ships.ships:
+                self.player.data_ships.refresh_available_cells(ship)
             cell = temp
             if is_horizontal:
                 self.place_ship_manually(cell, length * (block_size // 2),
