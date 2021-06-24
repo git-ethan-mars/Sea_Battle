@@ -21,6 +21,7 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
             elif game.is_place and game.player.is_ships_placed(load_file()):
+                self.delete_message()
                 start_game_button = game.draw_centre_button("Начать игру",
                                                             GREEN,
                                                             offset_y=-500,font_size=block_size)
