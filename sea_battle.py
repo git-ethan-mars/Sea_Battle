@@ -23,7 +23,7 @@ def main():
             elif game.is_place and game.player.is_ships_placed(load_file()):
                 start_game_button = game.draw_centre_button("Начать игру",
                                                             GREEN,
-                                                            offset_y=450)
+                                                            offset_y=-500,font_size=block_size)
             if event.type == pygame.MOUSEBUTTONDOWN and (
                     event.button == 1 or event.button == 3):
                 if game.ship_to_replace is not None and game.is_place:

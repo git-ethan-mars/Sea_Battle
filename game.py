@@ -138,8 +138,7 @@ class Game:
             (self.screen.get_height() - text.get_height()) // 2 + offset_y))
 
     def draw_centre_button(self, text: str, color: tuple, offset_x: int = 0,
-                           offset_y: int = 0) -> pygame.Rect:
-        font_size = int(block_size * 1.5)
+                           offset_y: int = 0,font_size=int(block_size*1.5)) -> pygame.Rect:
         font = pygame.font.Font(self.file_font, font_size)
         button_text = font.render(text, True, BLACK)
         button = pygame.Rect(
