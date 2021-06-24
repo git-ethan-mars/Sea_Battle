@@ -21,10 +21,10 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
             elif game.is_place and game.player.is_ships_placed(load_file()):
-                self.delete_message()
                 start_game_button = game.draw_centre_button("Начать игру",
                                                             GREEN,
-                                                            offset_y=-500,font_size=block_size)
+                                                            offset_y=-500,
+                                                            font_size=block_size)
             if event.type == pygame.MOUSEBUTTONDOWN and (
                     event.button == 1 or event.button == 3):
                 if game.ship_to_replace is not None and game.is_place:
@@ -35,7 +35,8 @@ def main():
                     continue
                 for ship in game.player.data_ships.ships:
                     for cell in ship:
-                        if Player.get_cell(event.pos) == cell and game.is_place:
+                        if Player.get_cell(
+                                event.pos) == cell and game.is_place:
                             game.ship_to_replace = ship
                             game.color_ship(ship, GREEN)
                             break
